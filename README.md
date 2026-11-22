@@ -1,20 +1,17 @@
 # hermeserenao
 
-Infraestrutura de agente autônomo adaptada para rodar **local**, sem VPS, domínio, Cloudflare ou assinatura paga. É um projeto de portfólio: implementação própria inspirada na arquitetura da Imersão Agentes Autônomos da PycodeBR.
+Infraestrutura local de agente autônomo para experimentar, com uma interface própria e o Hermes Agent como runtime do agente. O MVP roda em `localhost`; não exige VPS nem domínio.
 
-A ideia original monta um Hermes Agent em uma VPS Ubuntu 24.04, atrás de domínio, com canais Slack/WhatsApp/Telegram, Composio, Tailscale e uma Central de Operações. Aqui o mesmo desenho é reduzido ao que roda em uma máquina comum: núcleo do agente, memória, base de contexto, skills, camada de execução, integrações e painel — tudo em `localhost`.
+A primeira versão já oferece painel, API local, base Markdown com busca citável, diagrama e adaptadores demonstrativos. O próximo passo é conectar a interface ao Hermes instalado nesta máquina, que já usa o provider OpenAI/Codex Subscription. O app não deve usar uma chave da API OpenAI nem duplicar o cérebro do Hermes.
 
-## O que mudou em relação ao desenho original
+## Estado atual
 
-| Original (imersão) | hermeserenao (local) |
-| --- | --- |
-| VPS Ubuntu 24.04 + SSH | Mint1 local, um único processo Python |
-| Domínio + Cloudflare | `127.0.0.1:8765` |
-| Hermes Agent na VPS | núcleo local com interface para plugar um agente real depois |
-| Gateway Slack/WhatsApp/Telegram | gateway local com log de eventos em `state/events.jsonl` |
-| Composio CLI + OAuth | adaptadores stub em `integrations/` |
-| Provedor de modelo pago | sem chamadas de modelo; busca determinística na base de contexto |
-| Orca / Tailscale / Desktop | fora de escopo (dependem de servidor remoto) |
+- Painel + API em Docker Compose, publicados apenas em `127.0.0.1:8765`.
+- Busca determinística na base local, com arquivo e linha como citação.
+- O endpoint de resposta ainda não está conectado ao Hermes Agent.
+- Integrações e gateway multicanal são demonstrativos, sem acesso externo.
+- Escopo do MVP local: [docs/MVP_SCOPE.md](docs/MVP_SCOPE.md).
+
 
 ## Rodando com Docker
 
@@ -64,20 +61,9 @@ Verificação de segredos:
 - `GET /api/architecture.svg` — diagrama gerado
 - `POST /api/ask` — `{"question": "..."}` → trechos com citação de arquivo e linha
 
-## Trocando o cérebro (provider)
+## Conexão com o cérebro Hermes
 
-A resposta é escolhida por `HERMESERENAO_PROVIDER`:
-
-    # padrão: devolve os trechos recuperados, sem modelo
-    export HERMESERENAO_PROVIDER=deterministic
-
-    # quando o provider OpenAI estiver configurado
-    export HERMESERENAO_PROVIDER=openai
-    export OPENAI_API_KEY=...   # nunca versionar
-
-Para adicionar um provider: crie `app/providers/meu.py` com `answer(question, hits)` devolvendo `{"question", "answers", "mode"}` e registre o nome em `app/providers/__init__.py`. O painel e os endpoints não mudam.
-
-No Docker, passe as variáveis com `environment:` no `docker-compose.yml` ou via `docker compose run -e ...`.
+O MVP deve se conectar ao Hermes Agent instalado no host e aproveitar o provider OAuth já configurado nele. Não é necessário colocar `OPENAI_API_KEY` no projeto. A integração programática e a autenticação local ainda precisam ser implementadas e validadas; até lá, `/api/ask` continua usando busca determinística.
 
 ## Segurança
 
