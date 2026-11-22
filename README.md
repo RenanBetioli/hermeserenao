@@ -76,6 +76,10 @@ O endpoint `/api/chat` encaminha as mensagens ao API Server local do Hermes. A a
 
 A chave do API Server do Hermes fica em `.env` local (modo `0600`, ignorado pelo Git) e só é passada ao backend. `scripts/sync_hermes_key.py` copia apenas essa chave do arquivo privado do Hermes e nunca a imprime. O app e o API Server usam `network_mode: host` no Linux, mas escutam apenas em `127.0.0.1`. O API Server concede ao cliente acesso às ferramentas configuradas no Hermes, inclusive terminal; mantenha a porta local e revise permissões/solicitações do Hermes. Integrações de mensageria continuam stubs.
 
+## Acesso remoto privado
+
+Para abrir a Central no próprio celular fora de casa, sem expor o Hermes à internet, veja [o guia de Tailscale Serve](docs/ACESSO_REMOTO.md). O acesso remoto ainda depende da instalação e do login do operador no Tailscale; não está ativo por padrão.
+
 ## Limitações
 
 - O chat usa o Hermes já configurado; ele pode consumir os limites da assinatura escolhida. WhatsApp, Slack, Telegram e integrações de terceiros continuam fora do MVP.
