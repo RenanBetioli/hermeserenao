@@ -64,6 +64,21 @@ Verificação de segredos:
 - `GET /api/architecture.svg` — diagrama gerado
 - `POST /api/ask` — `{"question": "..."}` → trechos com citação de arquivo e linha
 
+## Trocando o cérebro (provider)
+
+A resposta é escolhida por `HERMESERENAO_PROVIDER`:
+
+    # padrão: devolve os trechos recuperados, sem modelo
+    export HERMESERENAO_PROVIDER=deterministic
+
+    # quando o provider OpenAI estiver configurado
+    export HERMESERENAO_PROVIDER=openai
+    export OPENAI_API_KEY=...   # nunca versionar
+
+Para adicionar um provider: crie `app/providers/meu.py` com `answer(question, hits)` devolvendo `{"question", "answers", "mode"}` e registre o nome em `app/providers/__init__.py`. O painel e os endpoints não mudam.
+
+No Docker, passe as variáveis com `environment:` no `docker-compose.yml` ou via `docker compose run -e ...`.
+
 ## Segurança
 
 Nenhuma credencial é lida, enviada ou armazenada. O `.gitignore` exclui `.env` e chaves. O script `check_secrets.py` falha se encontrar padrões de token no repositório. As integrações são stubs: não autenticam em nada.

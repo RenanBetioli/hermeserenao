@@ -30,6 +30,15 @@ class ServerTest(unittest.TestCase):
         self.assertIn("line", first)
         self.assertTrue(first["source"].startswith("context/"))
 
+    def test_provider_selecionavel(self):
+        from app.providers import get_provider
+        with patch.dict("os.environ", {"HERMESERENAO_PROVIDER": "deterministic"}):
+            self.assertEqual(get_provider().name, "deterministic")
+
+    def test_retrieve_com_citacao(self):
+        self.assertTrue(server.retrieve("segredos memoria"))
+        self.assertTrue(server.retrieve("segredos memoria")[0]["source"].startswith("context/"))
+
     def test_svg_valido(self):
         out = svg()
         self.assertTrue(out.startswith("<svg"))

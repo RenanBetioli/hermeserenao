@@ -7,6 +7,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from .architecture import svg as architecture_svg
+from .providers import get_provider
 
 ROOT = Path(__file__).resolve().parent.parent
 CONTEXT = ROOT / "context"
@@ -88,7 +89,8 @@ def append_event(kind, detail):
     return row
 
 
-def ask_payload(question):
+def retrieve(question, limit=5):
+    """Recupera trechos citaveis da base de contexto."""
     tokens = {t for t in re.findall(r"[\wÀ-ÿ]{3,}", question.lower()) if t not in STOPWORDS}
     hits = []
     for p in _md_files():
@@ -101,8 +103,14 @@ def ask_payload(question):
             if score:
                 hits.append({"source": _rel(p), "line": n, "text": text[:260], "score": score})
     hits.sort(key=lambda h: (-h["score"], h["source"], h["line"]))
+    return hits[:limit]
+
+
+def ask_payload(question):
+    hits = retrieve(question)
+    result = get_provider().answer(question, hits)
     append_event("ask", question[:120])
-    return {"question": question, "answers": hits[:5], "mode": "busca determinística (sem LLM)"}
+    return result
 
 
 class Handler(BaseHTTPRequestHandler):
