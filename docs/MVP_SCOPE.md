@@ -18,20 +18,20 @@ Executar uma experiência de agente pessoal nesta máquina, sem VPS, domínio ou
 
 ### 1. Central web
 
-- Chat com o runtime Hermes e histórico de sessões.
-- Exibição de resposta em streaming e eventos de ferramentas/estado, caso suportados pelo endpoint escolhido.
-- Painel lateral com status do runtime, fontes de contexto e ações pendentes.
+- Chat com o runtime Hermes; histórico mantido em memória pela página enquanto ela estiver aberta.
+- Resposta não-streaming nesta fatia; streaming e eventos de ferramentas ficam para a próxima iteração.
+- Painel com status do runtime, fontes e contexto recuperado; ainda não há fila visual de aprovações.
 - Layout responsivo; informação de ambiente `LOCAL` sempre visível.
 
 ### 2. Conexão ao Hermes
 
-Usar a interface programática oficial do Hermes em execução no host, não chamar diretamente um modelo por API key. Antes de implementar o conector, validar no host o modo suportado e a autenticação local; não expor endpoint na rede local ou internet. Nenhuma chave ou token entra no repositório ou no frontend.
+Implementado via API Server oficial do Hermes no host (`127.0.0.1:8642`), usando o provider e a autenticação já configurados no Hermes. O container da Central usa rede host no Linux para falar com loopback; a porta da Central também fica em `127.0.0.1:8765`. `scripts/sync_hermes_key.py` copia apenas a chave local do API Server para um `.env` com modo `0600`, nunca versionado nem exibido. O navegador não recebe a chave.
 
 ### 3. Base de contexto
 
-- Ingerir arquivos Markdown e PDFs fornecidos pelo operador.
-- Guardar arquivos no diretório local de materiais; nunca copiar documentos originais para Git sem autorização.
-- Buscar trechos com metadados da fonte e oferecer citações verificáveis.
+- A busca atual indexa arquivos Markdown em `context/`; o PDF fornecido foi lido nesta sessão, mas não foi copiado para o repositório nem há ingestão automática de PDF ainda.
+- Guardar materiais pessoais em diretório local excluído do Git quando a ingestão de arquivos for implementada.
+- A cada turno, recuperar até cinco trechos Markdown e passar caminho/linha ao Hermes; o painel mostra as fontes recuperadas.
 - PDFs escaneados devem ser identificados como sem texto extraível; não fabricar conteúdo.
 - O agente recebe materiais sob demanda, em vez de carregar transcrições grandes em toda conversa.
 
@@ -67,6 +67,6 @@ Usar a interface programática oficial do Hermes em execução no host, não cha
 5. O sistema continua funcional se não houver arquivos de contexto e informa isso claramente.
 6. Testes cobrem o conector e o modo simulado sem fazer chamadas pagas nem ações externas.
 
-## Decisão técnica pendente antes do conector
+## Estado da decisão técnica
 
-O Hermes tem superfícies oficiais diferentes para integração programática. A escolha deve considerar streaming, aprovação de ferramentas, autenticação, persistência de sessões e se o processo precisa rodar no host ou pode ser acessado pelo container. Validar a configuração local atual primeiro; não habilitar um serviço global nem criar segredo sem revisão do operador.
+A conexão inicial foi validada pelo API Server do Hermes. O serviço concede acesso às ferramentas configuradas no Hermes, inclusive terminal; por isso, a Central deve permanecer em loopback e a chave deve ficar apenas no backend. A resposta ainda não é transmitida em streaming e o chat não exibe uma fila de aprovações própria. O próximo ciclo pode acrescentar streaming, sessões persistentes e um fluxo visual de aprovação antes de adicionar canais ou OAuth externos.

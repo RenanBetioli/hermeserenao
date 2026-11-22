@@ -2,25 +2,27 @@
 
 Infraestrutura local de agente autônomo para experimentar, com uma interface própria e o Hermes Agent como runtime do agente. O MVP roda em `localhost`; não exige VPS nem domínio.
 
-A primeira versão já oferece painel, API local, base Markdown com busca citável, diagrama e adaptadores demonstrativos. O próximo passo é conectar a interface ao Hermes instalado nesta máquina, que já usa o provider OpenAI/Codex Subscription. O app não deve usar uma chave da API OpenAI nem duplicar o cérebro do Hermes.
+A interface conversa com o Hermes instalado nesta máquina, que usa o provider OpenAI/Codex Subscription. O app não usa uma chave da API OpenAI nem duplica o cérebro do Hermes.
 
 ## Estado atual
 
 - Painel + API em Docker Compose, publicados apenas em `127.0.0.1:8765`.
 - Busca determinística na base local, com arquivo e linha como citação.
-- O endpoint de resposta ainda não está conectado ao Hermes Agent.
+- O chat se conecta ao API Server local do Hermes por rede loopback; o endpoint de busca permanece disponível para consulta rápida.
 - Integrações e gateway multicanal são demonstrativos, sem acesso externo.
 - Escopo do MVP local: [docs/MVP_SCOPE.md](docs/MVP_SCOPE.md).
 
 
 ## Rodando com Docker
 
-    docker compose up --build
-    # a porta so escuta em 127.0.0.1: http://127.0.0.1:8765
+    /usr/bin/python3.13 scripts/sync_hermes_key.py
+    docker compose up --build -d
+    # abrir http://127.0.0.1:8765
     docker compose down
 
 Sem Docker (Python 3.13):
 
+    set -a; . ./.env; set +a
     /usr/bin/python3.13 hermeserenao.py check
     /usr/bin/python3.13 hermeserenao.py serve
     # abrir http://127.0.0.1:8765
@@ -60,18 +62,19 @@ Verificação de segredos:
 - `GET /api/events` — últimos eventos
 - `GET /api/architecture.svg` — diagrama gerado
 - `POST /api/ask` — `{"question": "..."}` → trechos com citação de arquivo e linha
+- `POST /api/chat` — `{"messages": [{"role":"user","content":"..."}]}` → resposta do Hermes local com contexto recuperado
 
 ## Conexão com o cérebro Hermes
 
-O MVP deve se conectar ao Hermes Agent instalado no host e aproveitar o provider OAuth já configurado nele. Não é necessário colocar `OPENAI_API_KEY` no projeto. A integração programática e a autenticação local ainda precisam ser implementadas e validadas; até lá, `/api/ask` continua usando busca determinística.
+O endpoint `/api/chat` encaminha as mensagens ao API Server local do Hermes. A autenticação do modelo fica no Hermes; o app só usa a chave local do API Server, guardada no `.env` ignorado pelo Git. Não use `OPENAI_API_KEY` aqui.
 
 ## Segurança
 
-Nenhuma credencial é lida, enviada ou armazenada. O `.gitignore` exclui `.env` e chaves. O script `check_secrets.py` falha se encontrar padrões de token no repositório. As integrações são stubs: não autenticam em nada.
+A chave do API Server do Hermes fica em `.env` local (modo `0600`, ignorado pelo Git) e só é passada ao backend. `scripts/sync_hermes_key.py` copia apenas essa chave do arquivo privado do Hermes e nunca a imprime. O app e o API Server usam `network_mode: host` no Linux, mas escutam apenas em `127.0.0.1`. O API Server concede ao cliente acesso às ferramentas configuradas no Hermes, inclusive terminal; mantenha a porta local e revise permissões/solicitações do Hermes. Integrações de mensageria continuam stubs.
 
 ## Limitações
 
-Isto **não é** o Hermes Agent e não executa tarefas autonomamente. O gateway e as integrações são simulações locais; não há chamada a LLM, WhatsApp, Slack ou Composio. A finalidade é demonstrar a arquitetura, a base de contexto e a interface de forma reproduzível e sem custo.
+- O chat usa o Hermes já configurado; ele pode consumir os limites da assinatura escolhida. WhatsApp, Slack, Telegram e integrações de terceiros continuam fora do MVP.
 
 ## Licença
 

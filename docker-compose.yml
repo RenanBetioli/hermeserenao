@@ -2,8 +2,11 @@ services:
   hermeserenao:
     build: .
     container_name: hermeserenao
-    ports:
-      - "127.0.0.1:8765:8765"
+    network_mode: host
+    command: ["python", "hermeserenao.py", "serve", "--host", "127.0.0.1", "--port", "8765"]
+    environment:
+      HERMES_API_SERVER_KEY: ${HERMES_API_SERVER_KEY:?run scripts/sync_hermes_key.py first}
+      HERMES_API_BASE_URL: ${HERMES_API_BASE_URL:-http://127.0.0.1:8642}
     volumes:
       - ./state:/app/state
       - ./context:/app/context:ro

@@ -1,13 +1,17 @@
 """API HTTP e serviços do hermeserenao (somente stdlib)."""
 import json
+import os
 import re
 import time
+import urllib.error
+import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
 from .architecture import svg as architecture_svg
 from .providers import get_provider
+from .providers.hermes_api import HermesAPIProvider
 
 ROOT = Path(__file__).resolve().parent.parent
 CONTEXT = ROOT / "context"
@@ -35,10 +39,22 @@ def status_payload():
     enabled = 0
     if jobs.exists():
         enabled = sum(1 for j in json.loads(jobs.read_text(encoding="utf-8")) if j.get("enabled"))
+    hermes_state = "off"
+    hermes_detail = "API Server local não configurado"
+    if os.getenv("HERMES_API_SERVER_KEY"):
+        try:
+            base = os.getenv("HERMES_API_BASE_URL", "http://127.0.0.1:8642").rstrip("/")
+            with urllib.request.urlopen(base + "/health", timeout=1) as response:
+                if response.status == 200:
+                    hermes_state = "ok"
+                    hermes_detail = "Hermes Agent · provider autenticado no Hermes"
+        except (OSError, urllib.error.URLError, TimeoutError):
+            hermes_state = "off"
+            hermes_detail = "chave local existe; API Server não respondeu"
     comps = [
         {"id": "api", "label": "API local", "state": "ok", "detail": "Python stdlib · 127.0.0.1"},
-        {"id": "agent", "label": "Núcleo do agente", "state": "demo", "detail": "sem chamada a modelo"},
-        {"id": "gateway", "label": "Gateway", "state": "demo", "detail": "eventos em state/events.jsonl"},
+        {"id": "agent", "label": "Hermes Agent", "state": hermes_state, "detail": hermes_detail},
+        {"id": "gateway", "label": "Gateway", "state": "demo", "detail": "mensageria externa ainda não conectada"},
         {"id": "context", "label": "Base de contexto", "state": "ok" if ctx else "off", "detail": f"{len(ctx)} documentos"},
         {"id": "skills", "label": "Skills", "state": "ok" if skills else "off", "detail": f"{len(skills)} registrada{'s' if len(skills) != 1 else ''}"},
         {"id": "scheduler", "label": "Agendador", "state": "demo", "detail": f"{enabled} rotina{'s' if enabled != 1 else ''} habilitada{'s' if enabled != 1 else ''}"},
@@ -113,6 +129,26 @@ def ask_payload(question):
     return result
 
 
+def chat_payload(messages):
+    if not isinstance(messages, list) or not messages or len(messages) > 30:
+        raise ValueError("messages deve conter de 1 a 30 mensagens")
+    clean = []
+    for item in messages:
+        if not isinstance(item, dict) or item.get("role") not in {"user", "assistant"}:
+            raise ValueError("cada mensagem deve ter role user ou assistant")
+        content = item.get("content")
+        if not isinstance(content, str) or not content.strip() or len(content) > 8000:
+            raise ValueError("conteúdo de mensagem inválido")
+        clean.append({"role": item["role"], "content": content.strip()})
+    if clean[-1]["role"] != "user":
+        raise ValueError("a última mensagem precisa ser do operador")
+    question = clean[-1]["content"]
+    hits = retrieve(question)
+    result = HermesAPIProvider().answer(question, hits, history=clean)
+    append_event("chat", "local Hermes turn")
+    return result
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "hermeserenao/0.1"
 
@@ -153,17 +189,27 @@ class Handler(BaseHTTPRequestHandler):
         self._json({"error": "not found"}, 404)
 
     def do_POST(self):
-        if urlparse(self.path).path != "/api/ask":
+        path = urlparse(self.path).path
+        if path not in {"/api/ask", "/api/chat"}:
             return self._json({"error": "not found"}, 404)
         try:
             size = int(self.headers.get("Content-Length", 0))
+            if size > 100_000:
+                return self._json({"error": "pedido muito grande"}, 413)
             body = json.loads(self.rfile.read(size) or b"{}")
-            question = str(body.get("question", "")).strip()
         except (ValueError, json.JSONDecodeError):
             return self._json({"error": "JSON inválido"}, 400)
-        if not question:
-            return self._json({"error": "question vazia"}, 400)
-        self._json(ask_payload(question))
+        if path == "/api/ask":
+            question = str(body.get("question", "")).strip()
+            if not question:
+                return self._json({"error": "question vazia"}, 400)
+            return self._json(ask_payload(question))
+        try:
+            self._json(chat_payload(body.get("messages")))
+        except ValueError as exc:
+            return self._json({"error": str(exc)}, 400)
+        except RuntimeError as exc:
+            return self._json({"error": str(exc)}, 503)
 
 
 def run_server(port=8765, host="127.0.0.1"):

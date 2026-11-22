@@ -54,10 +54,20 @@
   input[type=text] { flex: 1; min-width: 0; background: var(--panel-2); border: 1px solid var(--line); color: var(--ink); border-radius: 7px; padding: 10px; font-family: var(--sans); font-size: 13px; }
   button { background: #3b2f1e; color: var(--accent); border: 1px solid #6d5535; border-radius: 7px; padding: 10px 14px; cursor: pointer; font-family: var(--sans); font-size: 13px; }
   button:hover { background: #4a3a25; }
+  button:disabled { opacity: .55; cursor: wait; }
   button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .answer { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
   .answer .src { font-family: var(--mono); font-size: 11px; color: var(--accent); }
   .answer p { margin: 4px 0 14px; color: #cbd2d8; line-height: 1.5; font-size: 12px; }
+  .chat-log { min-height: 190px; max-height: 430px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: #12161a; margin-bottom: 10px; }
+  .chat-msg { white-space: pre-wrap; line-height: 1.55; margin: 0 0 12px; color: #d8dee4; }
+  .chat-msg.user { color: var(--accent); }
+  .chat-msg.error { color: #f08c80; }
+  .chat-compose { display: grid; gap: 8px; }
+  textarea { width: 100%; resize: vertical; min-height: 68px; background: var(--panel-2); border: 1px solid var(--line); color: var(--ink); border-radius: 7px; padding: 10px; font: 13px var(--sans); }
+  textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .chat-actions { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .chat-note { color: var(--muted); font-size: 10px; }
   .rowlist { list-style: none; margin: 0; padding: 0; }
   .rowlist li { padding: 8px 0; border-bottom: 1px solid #23292f; font-size: 12px; }
   .rowlist li:last-child { border-bottom: 0; }
@@ -81,15 +91,21 @@
     <ul class="rowlist" id="jobs"></ul>
   </section>
 
-  <section class="panel" aria-labelledby="arch-title">
-    <h2 id="arch-title">Arquitetura</h2>
+  <section class="panel" aria-labelledby="chat-title">
+    <h2 id="chat-title">Conversar com Hermes</h2>
+    <div id="chat-log" class="chat-log" aria-live="polite"><p class="empty">Conversa local com o Hermes Agent; ele usará as ferramentas e permissões já configuradas no Hermes.</p></div>
+    <form id="chat-form" class="chat-compose">
+      <textarea id="chat-input" aria-label="Mensagem para Hermes" placeholder="Peça algo ao Hermes…" required></textarea>
+      <div class="chat-actions"><span class="chat-note">A resposta pode levar alguns segundos; a chave fica apenas no servidor local.</span><button id="chat-send" type="submit">Enviar</button></div>
+    </form>
+    <h3>Arquitetura local</h3>
     <img class="arch" src="/api/architecture.svg" alt="Diagrama da arquitetura local">
     <h3>Eventos recentes</h3>
     <table><tbody id="events"><tr><td class="empty">Carregando…</td></tr></tbody></table>
   </section>
 
   <section class="panel rail" aria-labelledby="ask-title">
-    <h2 id="ask-title">Perguntar à base</h2>
+    <h2 id="ask-title">Buscar na base local</h2>
     <form id="ask-form">
       <input id="question" type="text" placeholder="ex.: como tratar segredos?" autocomplete="off" required>
       <button type="submit">Buscar</button>
@@ -125,8 +141,10 @@ function renderStatus(data) {
     const s = document.createElement('small'); s.textContent = c.detail;
     body.append(b, s); row.append(dot, body); box.append(row);
   });
+  const agent = data.components.find((c) => c.id === 'agent');
+  text($('mode'), agent && agent.state === 'ok' ? 'LOCAL · HERMES' : 'LOCAL · DEMO');
   const d = new Date(data.generated_at * 1000);
-  text($('footer'), 'estado lido do filesystem · ' + d.toLocaleTimeString('pt-BR') + ' · nenhum dado externo enviado');
+  text($('footer'), 'localhost · chave mantida no backend · chat encaminha a mensagem ao Hermes local · ' + d.toLocaleTimeString('pt-BR'));
 }
 
 function renderList(id, items, titleKey, subKey) {
@@ -150,6 +168,47 @@ function renderEvents(rows) {
     tr.append(ts, kind, detail); tb.append(tr);
   });
 }
+
+const chatMessages = [];
+const chatLog = $('chat-log');
+function addChatLine(role, content, className='') {
+  const p = document.createElement('p');
+  p.className = 'chat-msg ' + className;
+  p.textContent = (role ? role + ': ' : '') + content;
+  chatLog.append(p);
+  chatLog.scrollTop = chatLog.scrollHeight;
+  return p;
+}
+$('chat-form').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const input = $('chat-input');
+  const question = input.value.trim();
+  if (!question) return;
+  chatMessages.push({role: 'user', content: question});
+  addChatLine('Você', question, 'user');
+  input.value = '';
+  $('chat-send').disabled = true;
+  const pending = addChatLine('', 'Hermes está pensando…');
+  try {
+    const r = await fetch('/api/chat', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({messages: chatMessages})});
+    const data = await r.json();
+    pending.remove();
+    if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+    chatMessages.push({role: 'assistant', content: data.answer});
+    addChatLine('Hermes', data.answer);
+    if (data.sources && data.sources.length) {
+      const unique = [...new Set(data.sources.map(s => s.source + ':' + s.line))];
+      addChatLine('Fontes', unique.join(' · '), 'chat-note');
+    }
+  } catch (err) {
+    pending.remove();
+    addChatLine('Aviso', err.message, 'error');
+    chatMessages.pop();
+  } finally {
+    $('chat-send').disabled = false;
+    input.focus();
+  }
+});
 
 $('ask-form').addEventListener('submit', async (ev) => {
   ev.preventDefault();

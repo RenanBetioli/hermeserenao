@@ -2,13 +2,13 @@
 
 NODES = [
     ("user", "Você", ["operador"], 24, 238, 140, 58, "person"),
-    ("access", "Acesso local", ["CLI / TUI", "navegador", "gateway"], 216, 214, 176, 106, "access"),
-    ("models", "Modelos de IA", ["opcional", "sem chave"], 216, 62, 176, 72, "external"),
-    ("core", "hermeserenao", ["núcleo do agente"], 458, 214, 188, 88, "core"),
+    ("access", "Central Web", ["chat + painel", "127.0.0.1:8765"], 216, 214, 176, 106, "access"),
+    ("models", "Provider do Hermes", ["OpenAI/Codex", "OAuth ativo"], 216, 62, 176, 72, "external"),
+    ("core", "Hermes Agent", ["API Server local", "127.0.0.1:8642"], 458, 214, 188, 88, "core"),
     ("context", "Contexto", ["memória", "base versionada", "skills"], 724, 70, 206, 112, "context"),
     ("execution", "Execução", ["terminal", "arquivos", "código"], 724, 212, 206, 112, "execution"),
     ("integration", "Integrações", ["adaptadores stub"], 724, 356, 206, 82, "execution"),
-    ("central", "Central de Operações", ["painel + API"], 458, 372, 188, 82, "operations"),
+    ("central", "Eventos locais", ["logs mínimos", "sem credenciais"], 458, 372, 188, 82, "operations"),
     ("local", "Localhost", ["127.0.0.1:8765", "sem domínio"], 216, 372, 176, 82, "access"),
 ]
 
@@ -45,7 +45,7 @@ def svg() -> str:
         '</marker></defs>',
         f'<style>{STYLE}</style>',
         '<text class="title" x="24" y="32">Arquitetura local · hermeserenao</text>',
-        '<text class="sub" x="24" y="50">Versão adaptada: sem VPS, domínio ou serviços pagos</text>',
+        '<text class="sub" x="24" y="50">MVP local · provider autenticado pelo Hermes · sem VPS ou domínio</text>',
     ]
     for a, b in EDGES:
         _, _, _, x1, y1, w1, h1, _ = by_id[a]
@@ -64,6 +64,6 @@ def svg() -> str:
         for i, line in enumerate(lines):
             out.append(f'<text class="line" x="{x + w/2}" y="{cy + 17 + i*14}" text-anchor="middle">{line}</text>')
         out.append('</g>')
-    out.append('<text class="sub" x="24" y="458">Componentes tracejados são opcionais / futuros</text>')
+    out.append('<text class="sub" x="24" y="458">O API Server local tem acesso às ferramentas autorizadas no Hermes</text>')
     out.append('</svg>')
     return "".join(out)

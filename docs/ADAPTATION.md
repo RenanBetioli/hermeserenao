@@ -4,20 +4,20 @@
 | --- | --- | --- |
 | Sistema | VPS Ubuntu 24.04 | Linux local (ou qualquer host Docker) |
 | Acesso | SSH + domínio + DNS | `127.0.0.1:8765` |
-| Agente | harness instalado na VPS | núcleo demonstrado pela API |
-| Canais | mensageria externa | log de eventos local |
-| Integrações | CLI com OAuth | adaptadores stub |
-| Modelo | assinatura ou API paga | nenhuma chamada |
-| Persistência | disco da VPS | volumes locais do Compose |
+| Agente | Hermes Agent rodando na VPS | Hermes Agent do host via API Server em loopback |
+| Canais | WhatsApp/Slack/Telegram | chat web local; mensageria externa depois |
+| Integrações | hub OAuth | adaptadores stub, sem autenticação externa |
+| Modelo | provider configurado no agente | OAuth já configurado no Hermes; sem `OPENAI_API_KEY` no app |
+| Persistência | disco da VPS | volumes locais do Compose; `.env` privado e ignorado pelo Git |
 
-## Como migrar depois
+## Próximos passos antes de qualquer exposição externa
 
-1. Trocar `run_server(host=...)` para escutar na interface desejada e colocar um proxy reverso na frente.
-2. Substituir o gateway de eventos por um adaptador real de canal.
-3. Substituir a busca determinística por um agente com modelo, mantendo o contrato de resposta com citação.
-4. Implementar os adaptadores de integração com credenciais vindas de cofre, nunca de arquivos versionados.
-5. Adicionar autenticação à API antes de expor o painel fora de localhost.
+1. Implementar streaming e continuidade de sessões na interface.
+2. Criar uma camada visual de aprovação para ferramentas e ações externas.
+3. Adicionar autenticação de usuário e proteção contra CSRF.
+4. Só então avaliar mensageria externa e OAuth de integrações, com permissões mínimas.
+5. Nunca expor o API Server do Hermes em endereço público; manter sua chave apenas no backend.
 
 ## Docker
 
-`docker compose up --build`sobe o serviço na porta 8765. O volume `./state` preserva eventos entre recreações do container; `./context` é montado somente leitura.
+`python3.13 scripts/sync_hermes_key.py` cria um `.env` local de modo `0600` contendo apenas a chave do API Server. `docker compose up --build -d` sobe a Central. No Linux, o Compose usa `network_mode: host` para acessar o Hermes em `127.0.0.1:8642`; o app fica preso a `127.0.0.1:8765`. O volume `./state` preserva eventos; `./context` é somente leitura.
