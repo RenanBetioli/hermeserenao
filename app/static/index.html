@@ -2,248 +2,158 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>hermeserenao · central de operações</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>hermeserenao — Central de operações</title>
 <style>
-  :root {
-    --bg: #0f1215;
-    --panel: #161a1e;
-    --panel-2: #1b2025;
-    --line: #2a3138;
-    --ink: #e7eaed;
-    --muted: #8b959f;
-    --accent: #e0a458;
-    --ok: #63b57c;
-    --warn: #d7a24e;
-    --off: #6b747d;
-    --sans: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; }
-  header {
-    height: 58px; border-bottom: 1px solid var(--line); display: flex; align-items: center;
-    justify-content: space-between; padding: 0 20px; background: var(--panel);
-  }
-  .brand { display: flex; align-items: baseline; gap: 12px; }
-  .brand strong { font-size: 17px; letter-spacing: .2px; }
-  .brand span { color: var(--muted); font-size: 12px; }
-  .badge {
-    font-family: var(--mono); font-size: 11px; color: var(--accent);
-    border: 1px solid #57452d; border-radius: 999px; padding: 5px 10px;
-  }
-  main { display: grid; grid-template-columns: 250px minmax(0, 1fr) 320px; gap: 14px; padding: 14px; }
-  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
-  .panel h2 {
-    margin: 0 0 14px; font-size: 11px; font-weight: 650; letter-spacing: 1.4px;
-    text-transform: uppercase; color: var(--muted);
-  }
-  .panel h3 { margin: 22px 0 10px; font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
-  .dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 8px; background: var(--off); }
-  .dot.ok { background: var(--ok); } .dot.demo { background: var(--warn); } .dot.off { background: var(--off); }
-  .comp { display: flex; gap: 10px; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid #23292f; }
-  .comp:last-child { border-bottom: 0; }
-  .comp b { display: block; font-weight: 550; font-size: 13px; }
-  .comp small { color: var(--muted); font-size: 11px; }
-  .arch { width: 100%; height: auto; display: block; border-radius: 8px; background: #12161a; border: 1px solid #23292f; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  td { padding: 8px 6px; border-bottom: 1px solid #23292f; vertical-align: top; }
-  td.ts { font-family: var(--mono); color: var(--muted); white-space: nowrap; width: 150px; }
-  td.kind { font-family: var(--mono); color: var(--accent); width: 120px; }
-  form { display: flex; gap: 8px; }
-  input[type=text] { flex: 1; min-width: 0; background: var(--panel-2); border: 1px solid var(--line); color: var(--ink); border-radius: 7px; padding: 10px; font-family: var(--sans); font-size: 13px; }
-  button { background: #3b2f1e; color: var(--accent); border: 1px solid #6d5535; border-radius: 7px; padding: 10px 14px; cursor: pointer; font-family: var(--sans); font-size: 13px; }
-  button:hover { background: #4a3a25; }
-  button:disabled { opacity: .55; cursor: wait; }
-  button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .answer { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
-  .answer .src { font-family: var(--mono); font-size: 11px; color: var(--accent); }
-  .answer p { margin: 4px 0 14px; color: #cbd2d8; line-height: 1.5; font-size: 12px; }
-  .chat-log { min-height: 190px; max-height: 430px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: #12161a; margin-bottom: 10px; }
-  .chat-msg { white-space: pre-wrap; line-height: 1.55; margin: 0 0 12px; color: #d8dee4; }
-  .chat-msg.user { color: var(--accent); }
-  .chat-msg.error { color: #f08c80; }
-  .chat-compose { display: grid; gap: 8px; }
-  textarea { width: 100%; resize: vertical; min-height: 68px; background: var(--panel-2); border: 1px solid var(--line); color: var(--ink); border-radius: 7px; padding: 10px; font: 13px var(--sans); }
-  textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .chat-actions { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-  .chat-note { color: var(--muted); font-size: 10px; }
-  .rowlist { list-style: none; margin: 0; padding: 0; }
-  .rowlist li { padding: 8px 0; border-bottom: 1px solid #23292f; font-size: 12px; }
-  .rowlist li:last-child { border-bottom: 0; }
-  .rowlist small { display: block; color: var(--muted); font-family: var(--mono); font-size: 10px; margin-top: 3px; word-break: break-all; }
-  .empty { color: var(--muted); font-size: 12px; }
-  footer { padding: 0 18px 18px; color: var(--muted); font-size: 11px; font-family: var(--mono); }
-  @media (max-width: 1180px) { main { grid-template-columns: 230px minmax(0, 1fr); } .rail { grid-column: 1 / -1; } }
-  @media (max-width: 760px) { main { grid-template-columns: 1fr; } .rail { grid-column: auto; } header { padding: 0 12px; } }
+:root{--canvas:#f1f4f7;--surface:#fff;--ink:#0a1317;--muted:#5d6c7b;--line:#dee3e9;--blue:#0064e0;--blue-dark:#0457cb;--tint:#eaf3ff;--green:#247340;--amber:#825916;--sans:"Segoe UI",Arial,sans-serif;--mono:"Liberation Mono",Consolas,monospace}
+*{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--canvas);font:14px/1.5 var(--sans);letter-spacing:-.12px}button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{cursor:wait;opacity:.55}button,a,input,textarea,select{outline-offset:4px}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--blue)}button{color:inherit}a{color:var(--blue)}[hidden]{display:none!important}h1,h2,h3,p{margin:0}h1{font-size:30px;line-height:1.2;font-weight:600;letter-spacing:-1px}h2{font-size:18px;font-weight:600;letter-spacing:-.4px}h3{font-size:15px;font-weight:600}small{font-size:12px}.muted{color:var(--muted)}.eyebrow{color:var(--muted);font-size:11px;letter-spacing:1.25px;text-transform:uppercase;font-weight:600}.mono{font-family:var(--mono);font-size:11px}.icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}.btn{min-height:42px;border:1px solid var(--line);background:var(--surface);border-radius:100px;padding:10px 18px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:600;white-space:nowrap}.btn:hover{background:#f5f7fa}.btn.primary{background:var(--blue);border-color:var(--blue);color:white}.btn.primary:hover{background:var(--blue-dark)}.btn.quiet{background:none;border-color:transparent;color:var(--muted)}.text-btn{border:0;background:none;padding:8px 0;color:var(--blue);font-size:12px;font-weight:600}.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:100px;font-size:11px;white-space:nowrap;background:#f1f4f7;color:var(--muted)}.chip.ok{background:#edf7ef;color:var(--green)}.chip.demo{background:#fff5e5;color:var(--amber)}.dot{width:6px;height:6px;border-radius:50%;display:inline-block;background:currentColor}.shell{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100dvh}.sidebar{background:white;border-right:1px solid var(--line);padding:30px 16px 18px;position:sticky;top:0;height:100dvh;display:flex;flex-direction:column;z-index:30}.brand{display:flex;align-items:center;gap:10px;padding:0 12px 32px}.brand-mark{display:grid;place-items:center;background:var(--blue);color:white;border-radius:12px;width:35px;height:35px;font-size:21px;font-weight:600;font-style:italic}.brand-name{font-size:17px;letter-spacing:-.6px;font-weight:650}.brand-sub{font-size:10px;color:var(--muted);letter-spacing:.8px;text-transform:uppercase}.workspace{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;margin-bottom:27px}.workspace-badge{width:30px;height:30px;border-radius:8px;background:var(--canvas);display:grid;place-items:center;color:var(--muted);font-size:12px}.workspace b{display:block;font-size:12px;font-weight:600}.workspace small{color:var(--muted);font-size:11px}.nav-label{padding:0 12px 9px}.nav{display:grid;gap:4px}.nav-button{background:none;border:0;border-radius:10px;min-height:44px;padding:11px 13px;display:flex;gap:12px;align-items:center;text-align:left;color:var(--muted);font-weight:500}.nav-button:hover{background:var(--canvas)}.nav-button[aria-current="page"]{background:var(--tint);color:var(--blue);font-weight:650}.nav-button .nav-count{margin-left:auto;font-size:11px;background:#f1f4f7;padding:1px 6px;border-radius:4px}.nav-separator{margin:22px 0 16px;border-top:1px solid var(--line)}.sidebar-bottom{margin-top:auto;padding-top:22px}.local-info{padding:12px;background:#f7f9fb;border-radius:12px;line-height:1.6}.local-info b{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600}.local-info p{font-size:11px;color:var(--muted);margin-top:4px}.profile{display:flex;gap:10px;align-items:center;padding:19px 10px 0}.avatar{height:30px;width:30px;background:#e9edf2;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:600;color:#536475}.profile b{display:block;font-size:12px}.profile small{color:var(--muted);font-size:11px}.main-shell{min-width:0}.topbar{height:72px;padding:0 38px;border-bottom:1px solid var(--line);background:white;display:flex;gap:22px;align-items:center;justify-content:space-between}.breadcrumb{font-size:12px;color:var(--muted)}.breadcrumb span{margin:0 10px;color:#bac4ce}.breadcrumb b{font-weight:500;color:var(--ink)}.top-actions{display:flex;gap:13px;align-items:center}.search-box{display:flex;align-items:center;gap:8px;background:var(--canvas);border-radius:100px;padding:8px 13px;color:var(--muted)}.search-box input{background:none;border:0;width:174px;font-size:12px;min-width:0}.kbd{font:10px var(--mono);border:1px solid #d4dce4;border-radius:4px;padding:2px 4px}.menu-button{display:none;border:0;background:none;padding:8px}.content{max-width:1550px;margin:0 auto;padding:32px 38px 20px}.page-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:27px}.page-heading p{margin-top:7px;color:var(--muted);font-size:13px}.heading-action{display:flex;align-items:center;gap:8px}.status-strip{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:16px;margin-bottom:24px;padding:20px 24px}.status-item{padding:0 23px;border-right:1px solid var(--line)}.status-item:first-child{padding-left:0}.status-item:last-child{border:0}.status-item>small{color:var(--muted);font-size:11px}.status-value{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:15px;font-weight:600}.status-foot{display:block;font-size:11px;color:var(--muted);margin-top:4px}.overview-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(275px,1fr);gap:24px}.card{background:white;border:1px solid var(--line);border-radius:16px;min-width:0}.card-head{display:flex;align-items:center;justify-content:space-between;padding:23px 24px 17px;gap:12px}.card-body{padding:0 24px 24px}.launch-card{padding:26px 27px}.launch-title{display:flex;gap:12px;align-items:center;margin-bottom:20px}.agent-mark{background:var(--tint);color:var(--blue);width:39px;height:39px;border-radius:12px;display:grid;place-items:center;font-size:22px;font-style:italic;font-weight:600}.launch-title p{font-size:12px;color:var(--muted);margin-top:4px}.quick-compose{border:1px solid #c5d1df;border-radius:13px;overflow:hidden}.quick-compose:focus-within{border-color:var(--blue);box-shadow:0 0 0 2px #0064e012}.quick-compose textarea{border:0;background:none;width:100%;resize:vertical;min-height:95px;padding:16px;display:block;font-size:14px;outline:none}.compose-footer{display:flex;align-items:center;justify-content:space-between;padding:9px 12px 12px;gap:8px}.compose-footer small{font-size:11px;color:var(--muted)}.quick-compose .btn{min-height:36px;padding:7px 15px;font-size:12px}.suggestions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.suggestion{padding:7px 10px;border:1px solid var(--line);background:white;border-radius:7px;color:var(--muted);font-size:11px}.suggestion:hover{border-color:#a9c7ed;color:var(--blue)}.recent-card{margin-top:24px}.activity-list{list-style:none;margin:0;padding:0 24px 8px}.event{display:flex;gap:12px;padding:17px 0;border-top:1px solid #edf0f3}.event-icon{width:30px;height:30px;border-radius:9px;background:#f1f5f9;display:grid;place-items:center;color:#7b8998;flex-shrink:0}.event-icon .icon{width:15px;height:15px}.event-copy{min-width:0;flex:1}.event-copy b{font-size:12px;font-weight:600;display:block}.event-copy p{font-size:11px;color:var(--muted);margin-top:3px;overflow-wrap:anywhere}.event time{color:var(--muted);font-size:10px;white-space:nowrap;padding-top:2px}.doc-list{list-style:none;margin:0;padding:0}.doc-row{width:100%;border:0;border-top:1px solid #edf0f3;background:white;display:flex;gap:12px;align-items:center;padding:15px 0;text-align:left}.doc-row:hover .doc-title{color:var(--blue)}.file-icon{width:34px;height:40px;border:1px solid var(--line);border-radius:7px;display:grid;place-items:center;color:var(--blue);flex-shrink:0}.file-icon .icon{width:16px;height:18px}.doc-copy{flex:1;min-width:0}.doc-title{display:block;font-weight:500;font-size:12px}.doc-path{display:block;color:var(--muted);font-size:10px;margin-top:2px;overflow-wrap:anywhere}.arrow{color:#a0acb7;font-size:18px}.inline-note{padding:13px 15px;background:#f6f8fb;color:var(--muted);font-size:11px;border-radius:9px;line-height:1.65}.integration-card{margin-top:24px}.integration-row{display:flex;gap:12px;align-items:center;padding:14px 0}.service-logo{width:35px;height:35px;display:grid;place-items:center;background:#f1f4f7;border-radius:9px;font-weight:650;font-size:16px}.integration-row p{font-size:12px;font-weight:600}.integration-row small{color:var(--muted);font-size:11px}.integration-row .chip{margin-left:auto}.section-description{max-width:740px;color:var(--muted);font-size:13px;margin-bottom:22px}.library-tools{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:22px}.filter-input{height:44px;border:1px solid var(--line);border-radius:9px;background:white;padding:0 14px;flex:1;min-width:180px}.filter-chip{border:1px solid var(--line);background:white;border-radius:100px;padding:8px 13px;font-size:12px}.filter-chip[aria-pressed="true"]{border-color:var(--blue);color:var(--blue);background:var(--tint)}.library-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:16px}.document-card{background:white;border:1px solid var(--line);border-radius:14px;padding:21px;text-align:left;display:flex;flex-direction:column;min-height:175px}.document-card:hover{border-color:#a0bfea;box-shadow:0 4px 16px #14314808}.document-card .file-icon{margin-bottom:16px;background:#f7faff;border-color:#e0eafa}.document-card h3{font-size:14px}.document-card p{font-size:11px;overflow-wrap:anywhere;color:var(--muted);margin:6px 0 15px}.document-card small{font-size:10px;color:var(--muted);margin-top:auto}.search-results{margin:18px 0;display:grid;gap:12px}.search-result{background:white;border:1px solid var(--line);border-radius:11px;padding:17px 20px}.search-result button{background:none;border:0;padding:0;text-align:left;color:var(--blue);font-family:var(--mono);font-size:11px}.search-result p{font-size:13px;margin-top:8px;line-height:1.7;white-space:pre-wrap}.empty-state{text-align:center;padding:55px 24px;color:var(--muted)}.empty-state .icon{width:30px;height:30px;margin-bottom:12px;color:#94a7ba}.empty-state h3{color:var(--ink);font-size:16px;margin-bottom:7px}.empty-state p{font-size:12px;max-width:390px;margin:0 auto}.chat-layout{display:grid;grid-template-columns:minmax(0,1fr) 245px;gap:22px;align-items:start}.chat-card{padding:0;overflow:hidden}.chat-head{padding:16px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}.chat-head .agent-mark{height:32px;width:32px;font-size:18px}.chat-head b{display:block;font-size:12px}.chat-head small{font-size:10px;color:var(--muted)}.chat-log{height:clamp(290px,47vh,590px);overflow:auto;padding:24px;scroll-behavior:auto}.chat-welcome{text-align:center;max-width:360px;margin:55px auto 25px}.chat-welcome .agent-mark{margin:0 auto 18px;height:52px;width:52px;font-size:28px}.chat-welcome h2{font-size:23px;margin-bottom:8px}.chat-welcome p{font-size:12px;color:var(--muted);line-height:1.8}.message{margin:0 0 20px;max-width:95%;overflow-wrap:anywhere}.message.user{margin-left:auto;max-width:85%;background:var(--tint);border-radius:13px 13px 2px 13px;padding:14px 17px}.message-label{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px}.message.assistant .message-label{color:var(--blue)}.message-content{font-size:13px;line-height:1.8;white-space:pre-wrap}.message.error{color:#b32035}.message details{font-size:10px;color:var(--muted);margin-top:9px}.message summary{cursor:pointer}.chat-composer{padding:15px 19px 18px;border-top:1px solid var(--line)}.chat-composer textarea{width:100%;border:0;resize:vertical;min-height:65px;max-height:220px;font-size:13px;outline:none;padding:7px 2px;background:white}.chat-composer .compose-footer{padding:5px 0 0}.chat-rail .card{padding:19px;margin-bottom:16px}.chat-rail h3{font-size:12px;margin-bottom:10px}.chat-rail p{font-size:11px;color:var(--muted);line-height:1.8}.context-path{margin-top:8px;border-top:1px solid var(--line);padding-top:8px;overflow-wrap:anywhere}.table-wrap{overflow:auto}.event-table{border-collapse:collapse;width:100%;text-align:left}.event-table th{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);padding:16px 24px;background:#f9fbfc;border-bottom:1px solid var(--line)}.event-table td{font-size:12px;padding:18px 24px;border-bottom:1px solid #edf0f3;vertical-align:top;overflow-wrap:anywhere}.event-table td:first-child{white-space:nowrap;font-family:var(--mono);font-size:10px;color:var(--muted)}.system-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}.components{list-style:none;padding:0 24px 12px;margin:0}.component{padding:13px 0;border-top:1px solid #edf0f3;display:flex;align-items:center;gap:12px}.component>div{flex:1}.component b{font-weight:500;font-size:12px;display:block}.component p{color:var(--muted);font-size:11px;margin-top:3px}.jobs{padding:0 24px 18px}.job{border-top:1px solid var(--line);padding:13px 0;display:flex;justify-content:space-between;gap:10px}.job b{font-size:12px;font-weight:500}.job p{font-size:11px;color:var(--muted)}.architecture{margin-top:22px;padding:24px}.architecture img{background:#11161b;border-radius:12px;width:100%;margin-top:18px}.integration-full{padding:24px;max-width:850px}.integration-full .integration-row{padding:0 0 23px}.integration-full .service-logo{width:48px;height:48px;font-size:22px}.integration-full p{font-size:13px;color:var(--muted);line-height:1.8}.integration-full h3{font-size:18px}.steps{margin:20px 0 24px;padding-left:20px;color:var(--muted);font-size:12px;line-height:2.2}.footer{display:flex;justify-content:space-between;gap:12px;margin-top:30px;padding-top:16px;border-top:1px solid var(--line);font-size:10px;color:var(--muted)}.footer button{border:0;background:none;color:var(--muted);font-size:10px;padding:0}.load-error{background:#fff1f3;color:#a72035;border:1px solid #f6d4da;padding:12px 16px;border-radius:9px;margin-bottom:18px;font-size:12px}.dialog{width:min(760px,92vw);border:1px solid var(--line);border-radius:16px;padding:0;box-shadow:0 20px 80px #0a131733}.dialog::backdrop{background:#0a13175c}.dialog-head{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding:20px 24px}.dialog-body{padding:23px;max-height:60vh;overflow:auto}.dialog-body pre{font:12px/1.8 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere}.dialog-path{font:10px var(--mono);color:var(--muted);margin-bottom:18px;overflow-wrap:anywhere}.dialog-foot{padding:15px 24px;border-top:1px solid var(--line);display:flex;justify-content:flex-end}.close-button{height:36px;width:36px;display:grid;place-items:center;background:var(--canvas);border:0;border-radius:50%;font-size:21px}.mobile-overlay{display:none}
+@media(min-width:1650px){.content{padding-top:42px}.launch-card{padding:32px}.quick-compose textarea{min-height:118px}}
+@media(max-width:1180px){.shell{grid-template-columns:205px minmax(0,1fr)}.content{padding:27px 25px 18px}.topbar{padding:0 25px}.overview-grid{gap:18px;grid-template-columns:minmax(0,1.3fr) minmax(250px,1fr)}.status-strip{padding:18px}.status-item{padding:0 15px}.status-foot{font-size:10px}.chat-layout{grid-template-columns:minmax(0,1fr)}.chat-rail{display:none}.search-box input{width:130px}}
+@media(max-width:950px){.overview-grid{grid-template-columns:1fr}.overview-aside{display:grid;grid-template-columns:1fr 1fr;gap:18px}.integration-card{margin-top:0}.page-heading{align-items:flex-start}h1{font-size:25px}.status-strip{grid-template-columns:1fr 1fr}.status-item:last-child{display:none}.status-item:nth-child(2){border:0}.breadcrumb{display:none}.topbar{justify-content:flex-end}.system-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.shell{display:block}.sidebar{position:fixed;left:-265px;width:250px;transition:left .18s ease}.sidebar.open{left:0}.mobile-overlay.open{display:block;position:fixed;inset:0;background:#0a13175c;z-index:25}.menu-button{display:grid;place-items:center}.topbar{height:64px;padding:0 17px;justify-content:space-between;gap:8px}.top-actions{gap:9px}.search-box input{width:115px}.kbd{display:none}.content{padding:24px 17px 16px}.page-heading{margin-bottom:22px;gap:10px}.page-heading p{font-size:12px;max-width:230px}.heading-action .btn{padding:9px 12px;font-size:11px}.heading-action .icon{width:15px}.status-strip{padding:15px;border-radius:12px}.status-value{font-size:13px}.status-item{padding:0 12px}.status-foot{font-size:10px;line-height:1.5}.overview-aside{display:block}.integration-card{margin-top:18px}.overview-grid,.recent-card{gap:18px;margin-top:18px}.launch-card{padding:20px}.card-head{padding:20px 20px 15px}.card-body{padding:0 20px 20px}.activity-list{padding:0 20px 7px}.event time{font-size:9px}.event{gap:10px}.event-copy p{max-width:190px}.chat-log{height:44vh;padding:18px}.chat-composer{padding:13px}.compose-footer small{font-size:10px;max-width:160px}.chat-head{padding:15px}.footer{flex-wrap:wrap}.library-tools .filter-input{flex-basis:100%}.event-table td,.event-table th{padding:14px}.filter-chip{min-height:40px}.btn{min-height:44px}.integration-full{padding:21px}}
+@media(max-width:700px){.suggestion,.text-btn,.filter-chip{min-height:44px}.close-button,.menu-button{min-width:44px;min-height:44px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
-<header>
-  <div class="brand"><strong>hermeserenao</strong><span>central de operações</span></div>
-  <div class="badge" id="mode">LOCAL · DEMO</div>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><defs>
+<symbol id="i-home" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-2 2V11.5A8.5 8.5 0 0 1 10.5 3H14a7 7 0 0 1 7 7z"/><path d="M7 9h9M7 13h6"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H5v20h14V7zM14 2v6h5M8 12h8M8 16h6"/></symbol>
+<symbol id="i-activity" viewBox="0 0 24 24"><path d="M2 12h5l3-8 4 16 3-8h5"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="m9 15 6-6M7 17l-1 1a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0M17 7l1-1a4 4 0 0 1 6 6l-5 5a4 4 0 0 1-6 0" transform="translate(1 0) scale(.9)"/></symbol>
+<symbol id="i-system" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8M12 16v5M7 9h2M12 9h5"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+</defs></svg>
+<div class="shell">
+<div id="mobile-overlay" class="mobile-overlay"></div>
+<aside class="sidebar" id="sidebar" aria-label="Navegação principal">
+<div class="brand"><span class="brand-mark" aria-hidden="true">h</span><div><div class="brand-name">hermeserenao</div><div class="brand-sub">central de operações</div></div></div>
+<div class="workspace"><span class="workspace-badge">01</span><div><b>Meu workspace</b><small>Ambiente pessoal · local</small></div></div>
+<p class="nav-label eyebrow">Workspace</p>
+<nav class="nav" aria-label="Áreas da central">
+<button class="nav-button" data-view="overview" aria-current="page"><svg class="icon"><use href="#i-home"/></svg>Visão geral</button>
+<button class="nav-button" data-view="chat"><svg class="icon"><use href="#i-chat"/></svg>Conversar com Hermes</button>
+<button class="nav-button" data-view="library"><svg class="icon"><use href="#i-file"/></svg>Materiais<span class="nav-count" id="nav-doc-count">—</span></button>
+<button class="nav-button" data-view="activity"><svg class="icon"><use href="#i-activity"/></svg>Atividade</button>
+</nav>
+<div class="nav-separator"></div><p class="nav-label eyebrow">Gerenciar</p>
+<nav class="nav" aria-label="Configuração da central">
+<button class="nav-button" data-view="integrations"><svg class="icon"><use href="#i-link"/></svg>Integrações</button>
+<button class="nav-button" data-view="system"><svg class="icon"><use href="#i-system"/></svg>Sistema e rotinas</button>
+</nav>
+<div class="sidebar-bottom"><div class="local-info"><b><span class="dot" style="color:var(--green)"></span> Somente nesta máquina</b><p>Sem VPS, sem domínio.<br>A central é acessada por localhost.</p></div><div class="profile"><span class="avatar">ME</span><div><b>Workspace pessoal</b><small>Você está no controle</small></div></div></div>
+</aside>
+<div class="main-shell">
+<header class="topbar">
+<button id="menu-toggle" class="menu-button" aria-label="Abrir navegação" aria-expanded="false"><svg class="icon"><use href="#i-menu"/></svg></button>
+<p class="breadcrumb">Workspace <span>/</span><b id="breadcrumb-title">Visão geral</b></p>
+<div class="top-actions"><form class="search-box" id="global-search-form" role="search"><svg class="icon" style="width:16px;height:16px"><use href="#i-search"/></svg><input id="global-search" type="search" aria-label="Buscar materiais" placeholder="Buscar materiais…"><span class="kbd">/</span></form><span class="chip" id="mode"><span class="dot"></span>Verificando</span></div>
 </header>
-<main>
-  <section class="panel" aria-labelledby="comp-title">
-    <h2 id="comp-title">Componentes</h2>
-    <div id="components"><p class="empty">Carregando…</p></div>
-    <h3>Agendador</h3>
-    <ul class="rowlist" id="jobs"></ul>
-  </section>
-
-  <section class="panel" aria-labelledby="chat-title">
-    <h2 id="chat-title">Conversar com Hermes</h2>
-    <div id="chat-log" class="chat-log" aria-live="polite"><p class="empty">Conversa local com o Hermes Agent; ele usará as ferramentas e permissões já configuradas no Hermes.</p></div>
-    <form id="chat-form" class="chat-compose">
-      <textarea id="chat-input" aria-label="Mensagem para Hermes" placeholder="Peça algo ao Hermes…" required></textarea>
-      <div class="chat-actions"><span class="chat-note">A resposta pode levar alguns segundos; a chave fica apenas no servidor local.</span><button id="chat-send" type="submit">Enviar</button></div>
-    </form>
-    <h3>Arquitetura local</h3>
-    <img class="arch" src="/api/architecture.svg" alt="Diagrama da arquitetura local">
-    <h3>Eventos recentes</h3>
-    <table><tbody id="events"><tr><td class="empty">Carregando…</td></tr></tbody></table>
-  </section>
-
-  <section class="panel rail" aria-labelledby="ask-title">
-    <h2 id="ask-title">Buscar na base local</h2>
-    <form id="ask-form">
-      <input id="question" type="text" placeholder="ex.: como tratar segredos?" autocomplete="off" required>
-      <button type="submit">Buscar</button>
-    </form>
-    <div id="answer" class="answer"><p class="empty">Busca determinística nos arquivos de contexto. Sem LLM e sem custo.</p></div>
-    <h3>Base de contexto</h3>
-    <ul class="rowlist" id="context"></ul>
-    <h3>Skills</h3>
-    <ul class="rowlist" id="skills"></ul>
-  </section>
+<main class="content" id="main-content">
+<div id="load-error" class="load-error" role="alert" hidden></div>
+<section id="view-overview" class="view" aria-labelledby="overview-title">
+<div class="page-heading"><div><h1 id="overview-title">Central de operações</h1><p>Converse, consulte seus materiais e acompanhe o que acontece.</p></div><div class="heading-action"><button class="btn primary" data-action="open-chat"><svg class="icon"><use href="#i-plus"/></svg>Abrir conversa</button></div></div>
+<div class="status-strip">
+<div class="status-item"><small>Seu agente</small><div class="status-value" id="agent-status">Verificando Hermes…</div><span class="status-foot">Runtime Hermes nesta máquina</span></div>
+<div class="status-item"><small>Base de contexto</small><div class="status-value" id="doc-status">Carregando…</div><span class="status-foot">Arquivos Markdown disponíveis</span></div>
+<div class="status-item"><small>Conexões externas</small><div class="status-value">Ainda não verificadas</div><span class="status-foot">OAuth não é gerenciado pelo portal</span></div>
+</div>
+<div class="overview-grid"><div>
+<div class="card launch-card"><div class="launch-title"><span class="agent-mark" aria-hidden="true">h</span><div><h2>O que vamos fazer agora?</h2><p>Peça ao seu Hermes. A conexão já está aqui.</p></div></div>
+<form id="quick-form" class="quick-compose"><textarea id="quick-input" aria-label="Sua próxima tarefa" maxlength="8000" placeholder="Descreva uma tarefa ou faça uma pergunta…" required></textarea><div class="compose-footer"><small>Hermes local · ferramentas do seu agente</small><button class="btn primary" type="submit">Conversar<svg class="icon" style="width:15px"><use href="#i-arrow"/></svg></button></div></form>
+<div class="suggestions"><button class="suggestion" data-prompt="Explique o que existe na minha base de contexto, sem alterar arquivos.">Explorar minha base</button><button class="suggestion" data-prompt="Ajude a planejar minhas próximas tarefas. Pergunte o que precisa saber antes de executar qualquer ação.">Planejar uma tarefa</button><button class="suggestion" data-prompt="Verifique as conexões existentes do Composio antes de propor uma nova. Não autorize nem conecte contas sem minha confirmação.">Revisar conexões</button></div></div>
+<div class="card recent-card"><div class="card-head"><div><p class="eyebrow" style="margin-bottom:5px">Acompanhamento</p><h2>Atividade recente</h2></div><button class="text-btn" data-view="activity">Ver tudo →</button></div><ul class="activity-list" id="recent-events"><li class="muted" style="padding-bottom:20px">Carregando registros…</li></ul></div>
+</div><aside class="overview-aside">
+<div class="card"><div class="card-head"><h2>Seus materiais</h2><button class="text-btn" data-view="library">Abrir base →</button></div><div class="card-body"><ul class="doc-list" id="recent-docs"></ul><p class="inline-note" style="margin-top:12px">Os materiais desta lista são arquivos reais da base. PDFs da aula ainda não foram importados.</p></div></div>
+<div class="card integration-card"><div class="card-head"><h2>Próxima conexão</h2></div><div class="card-body"><div class="integration-row"><div class="service-logo">N</div><div><p>Notion</p><small>Conectar pelo Composio</small></div><span class="chip">Pendente</span></div><p class="muted" style="font-size:12px;line-height:1.8;margin-bottom:13px">Escolha o conteúdo que o agente pode acessar. A autorização acontece na sua conta, não neste painel.</p><button class="text-btn" data-view="integrations">Entender a conexão →</button></div></div>
+</aside></div>
+</section>
+<section id="view-chat" class="view" aria-labelledby="chat-title" hidden>
+<div class="page-heading"><div><h1 id="chat-title">Conversar com Hermes</h1><p>Seu agente, suas ferramentas e os materiais da sua base.</p></div><button class="btn" id="clear-chat">Limpar conversa</button></div>
+<div class="chat-layout"><div class="card chat-card"><div class="chat-head"><span class="agent-mark" aria-hidden="true">h</span><div><b>Hermes Agent</b><small>Conexão com o runtime local</small></div><span class="chip" id="chat-state" style="margin-left:auto">Aguardando</span></div>
+<div id="chat-log" class="chat-log" role="log" aria-live="polite"><div id="chat-welcome" class="chat-welcome"><span class="agent-mark" aria-hidden="true">h</span><h2>Vamos trabalhar?</h2><p>Faça uma pergunta ou descreva sua tarefa. O Hermes usa as ferramentas configuradas nele e recebe os trechos relevantes da base.</p></div></div>
+<form id="chat-form" class="chat-composer"><textarea id="chat-input" aria-label="Mensagem para Hermes" maxlength="8000" placeholder="Escreva para o Hermes…" required></textarea><div class="compose-footer"><small>Enter envia · Shift + Enter quebra linha</small><button class="btn primary" id="chat-send" type="submit">Enviar<svg class="icon" style="width:16px"><use href="#i-arrow"/></svg></button></div></form></div>
+<aside class="chat-rail"><div class="card"><h3>Contexto desta conversa</h3><p>Os trechos recuperados aparecem aqui a cada resposta. Isso não significa que todas as fontes foram usadas.</p><div id="chat-sources"></div></div><div class="card"><h3>Você no comando</h3><p>O Hermes mantém as permissões configuradas nele. Este portal ainda não tem uma fila própria para aprovar ações externas.</p></div><div class="card"><h3>Sobre o histórico</h3><p>A conversa fica na memória desta aba. Atualizar ou fechar a página limpa o histórico do portal.</p></div></aside></div>
+</section>
+<section id="view-library" class="view" aria-labelledby="library-title" hidden>
+<div class="page-heading"><div><h1 id="library-title">Materiais e contexto</h1><p>Explore os arquivos da base e busque trechos com suas fontes.</p></div><span class="chip" id="library-total">Carregando</span></div>
+<form id="ask-form" class="library-tools"><input class="filter-input" id="question" type="search" aria-label="Pesquisar trechos na base" placeholder="Pesquise um assunto, por exemplo: segredos ou memória" required><button class="btn primary" id="search-submit" type="submit"><svg class="icon" style="width:17px"><use href="#i-search"/></svg>Buscar trechos</button><button class="btn quiet" id="reset-search" type="button">Limpar</button></form>
+<div id="answer" class="search-results" aria-live="polite"></div>
+<div class="library-tools" aria-label="Filtrar arquivos por domínio"><button class="filter-chip" type="button" data-domain="all" aria-pressed="true">Todos</button><button class="filter-chip" type="button" data-domain="agentes" aria-pressed="false">Agentes</button><button class="filter-chip" type="button" data-domain="operacoes" aria-pressed="false">Operações</button><button class="filter-chip" type="button" data-domain="seguranca" aria-pressed="false">Segurança</button></div>
+<div id="context" class="library-grid"></div><p class="muted" style="font-size:11px;margin-top:18px">Fonte: diretório context/ do projeto. A importação de PDF e o upload ainda não estão disponíveis.</p>
+</section>
+<section id="view-activity" class="view" aria-labelledby="activity-title" hidden>
+<div class="page-heading"><div><h1 id="activity-title">Atividade</h1><p>Últimos registros gravados pela central. Mais recentes primeiro.</p></div><button class="btn" id="refresh-events"><svg class="icon" style="width:17px"><use href="#i-clock"/></svg>Atualizar</button></div>
+<div class="library-tools"><label class="muted" for="event-filter" style="font-size:12px">Mostrar</label><select class="filter-input" id="event-filter" style="max-width:240px"><option value="all">Todos os eventos</option><option value="chat">Conversas</option><option value="ask">Buscas na base</option><option value="server_started">Inicializações</option><option value="gateway">Gateway demonstrativo</option></select><span class="muted" style="font-size:11px">O endpoint retorna até 12 registros; não é uma auditoria completa do Hermes.</span></div>
+<div class="card table-wrap"><table class="event-table"><thead><tr><th>Data e hora</th><th>Evento</th><th>Detalhes</th></tr></thead><tbody id="events"></tbody></table></div>
+</section>
+<section id="view-integrations" class="view" aria-labelledby="integrations-title" hidden>
+<div class="page-heading"><div><h1 id="integrations-title">Integrações</h1><p>Conecte apenas o que você precisa e revise as permissões.</p></div><span class="chip demo">Não gerenciadas pelo portal</span></div>
+<div class="card integration-full"><div class="integration-row"><div class="service-logo">N</div><div><h3>Notion + Composio</h3><small>Primeira integração sugerida</small></div><span class="chip">Autorização pendente</span></div><p>A central já conversa com o Hermes. As contas externas são outro passo: o agente precisa verificar o CLI do Composio e as conexões existentes antes de solicitar uma autorização.</p><ol class="steps"><li>O Hermes verifica as conexões já cadastradas.</li><li>Você escolhe a conta e autoriza o acesso no navegador.</li><li>Uma consulta de leitura confirma o acesso aos materiais.</li></ol><button class="btn primary" data-prompt="Quero conectar o Notion pelo Composio. Primeiro verifique se o CLI está autenticado e liste apenas os serviços e estados das conexões, sem expor identificadores ou chaves. Se faltar a conexão Notion, explique as permissões e peça minha confirmação antes de iniciar a autorização OAuth.">Preparar conexão no chat<svg class="icon" style="width:16px"><use href="#i-arrow"/></svg></button><p class="inline-note" style="margin-top:23px">Este botão prepara uma mensagem; não conecta contas e não concede permissões automaticamente. O portal não consulta o estado das contas externas nesta versão.</p></div>
+</section>
+<section id="view-system" class="view" aria-labelledby="system-title" hidden>
+<div class="page-heading"><div><h1 id="system-title">Sistema e rotinas</h1><p>O que está conectado, o que é demonstração e como a central funciona.</p></div><button class="btn" id="refresh-status">Verificar status</button></div>
+<div class="system-grid"><div class="card"><div class="card-head"><h2>Componentes</h2><span class="chip">Status do backend</span></div><ul id="components" class="components"></ul></div><div><div class="card"><div class="card-head"><h2>Skills do projeto</h2></div><div id="skills" class="jobs"></div><p class="inline-note" style="margin:0 24px 22px">Este registro é demonstrativo; não representa o catálogo completo de skills do Hermes.</p></div><div class="card" style="margin-top:22px"><div class="card-head"><h2>Rotinas de exemplo</h2><span class="chip demo">Sem execução</span></div><div id="jobs" class="jobs"></div><p class="inline-note" style="margin:0 24px 22px">São configurações de demonstração. Nenhum agendador do portal executa essas rotinas.</p></div></div></div>
+<details class="card architecture"><summary style="cursor:pointer;font-weight:600;font-size:14px">Ver arquitetura técnica</summary><img src="/api/architecture.svg" alt="Arquitetura local do hermeserenao com conexão ao Hermes Agent" loading="lazy"></details>
+</section>
+<footer class="footer"><span>hermeserenao · Workspace local</span><span id="footer-status">Carregando estado…</span><button data-view="system">Informações do sistema ↗</button></footer>
 </main>
-<footer id="footer">aguardando status…</footer>
+</div></div>
+<dialog id="document-dialog" class="dialog" aria-labelledby="document-title"><div class="dialog-head"><h2 id="document-title">Material</h2><button class="close-button" id="close-document" aria-label="Fechar material">×</button></div><div class="dialog-body"><p class="dialog-path" id="document-path"></p><pre id="document-content">Carregando…</pre></div><div class="dialog-foot"><button class="btn primary" id="ask-document">Perguntar ao Hermes</button></div></dialog>
 <script>
-const $ = (id) => document.getElementById(id);
-const text = (el, value) => { el.textContent = value; };
-
-async function getJSON(path) {
-  const r = await fetch(path);
-  if (!r.ok) throw new Error(path + ' -> ' + r.status);
-  return r.json();
-}
-
-function renderStatus(data) {
-  const box = $('components');
-  box.replaceChildren();
-  data.components.forEach((c) => {
-    const row = document.createElement('div');
-    row.className = 'comp';
-    const dot = document.createElement('span');
-    dot.className = 'dot ' + c.state;
-    const body = document.createElement('div');
-    const b = document.createElement('b'); b.textContent = c.label;
-    const s = document.createElement('small'); s.textContent = c.detail;
-    body.append(b, s); row.append(dot, body); box.append(row);
-  });
-  const agent = data.components.find((c) => c.id === 'agent');
-  text($('mode'), agent && agent.state === 'ok' ? 'LOCAL · HERMES' : 'LOCAL · DEMO');
-  const d = new Date(data.generated_at * 1000);
-  text($('footer'), 'localhost · chave mantida no backend · chat encaminha a mensagem ao Hermes local · ' + d.toLocaleTimeString('pt-BR'));
-}
-
-function renderList(id, items, titleKey, subKey) {
-  const ul = $(id); ul.replaceChildren();
-  items.forEach((item) => {
-    const li = document.createElement('li');
-    li.textContent = item[titleKey];
-    if (subKey && item[subKey]) { const s = document.createElement('small'); s.textContent = item[subKey]; li.append(s); }
-    ul.append(li);
-  });
-}
-
-function renderEvents(rows) {
-  const tb = $('events'); tb.replaceChildren();
-  if (!rows.length) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.className = 'empty'; td.textContent = 'Nenhum evento registrado.'; tr.append(td); tb.append(tr); return; }
-  rows.forEach((e) => {
-    const tr = document.createElement('tr');
-    const ts = document.createElement('td'); ts.className = 'ts'; ts.textContent = e.ts || '';
-    const kind = document.createElement('td'); kind.className = 'kind'; kind.textContent = e.kind || '';
-    const detail = document.createElement('td'); detail.textContent = e.detail || '';
-    tr.append(ts, kind, detail); tb.append(tr);
-  });
-}
-
-const chatMessages = [];
-const chatLog = $('chat-log');
-function addChatLine(role, content, className='') {
-  const p = document.createElement('p');
-  p.className = 'chat-msg ' + className;
-  p.textContent = (role ? role + ': ' : '') + content;
-  chatLog.append(p);
-  chatLog.scrollTop = chatLog.scrollHeight;
-  return p;
-}
-$('chat-form').addEventListener('submit', async (ev) => {
-  ev.preventDefault();
-  const input = $('chat-input');
-  const question = input.value.trim();
-  if (!question) return;
-  chatMessages.push({role: 'user', content: question});
-  addChatLine('Você', question, 'user');
-  input.value = '';
-  $('chat-send').disabled = true;
-  const pending = addChatLine('', 'Hermes está pensando…');
-  try {
-    const r = await fetch('/api/chat', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({messages: chatMessages})});
-    const data = await r.json();
-    pending.remove();
-    if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
-    chatMessages.push({role: 'assistant', content: data.answer});
-    addChatLine('Hermes', data.answer);
-    if (data.sources && data.sources.length) {
-      const unique = [...new Set(data.sources.map(s => s.source + ':' + s.line))];
-      addChatLine('Fontes', unique.join(' · '), 'chat-note');
-    }
-  } catch (err) {
-    pending.remove();
-    addChatLine('Aviso', err.message, 'error');
-    chatMessages.pop();
-  } finally {
-    $('chat-send').disabled = false;
-    input.focus();
-  }
-});
-
-$('ask-form').addEventListener('submit', async (ev) => {
-  ev.preventDefault();
-  const q = $('question').value.trim();
-  if (!q) return;
-  const out = $('answer');
-  out.replaceChildren();
-  const wait = document.createElement('p'); wait.className = 'empty'; wait.textContent = 'Buscando…'; out.append(wait);
-  try {
-    const r = await fetch('/api/ask', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({question: q})});
-    const data = await r.json();
-    out.replaceChildren();
-    if (!data.answers || !data.answers.length) {
-      const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'Nenhum trecho correspondente.'; out.append(p); return;
-    }
-    data.answers.forEach((a) => {
-      const src = document.createElement('div'); src.className = 'src'; src.textContent = a.source + ':' + a.line;
-      const p = document.createElement('p'); p.textContent = a.text;
-      out.append(src, p);
-    });
-  } catch (err) {
-    out.replaceChildren();
-    const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'Falha na busca: ' + err.message; out.append(p);
-  }
-});
-
-Promise.all([getJSON('/api/status'), getJSON('/api/context'), getJSON('/api/skills'), getJSON('/api/events'), getJSON('/api/jobs')])
-  .then(([status, context, skills, events, jobs]) => {
-    renderStatus(status);
-    renderList('context', context, 'title', 'path');
-    renderList('skills', skills, 'name', 'description');
-    renderList('jobs', jobs, 'description', 'id');
-    renderEvents(events);
-  })
-  .catch((err) => { text($('footer'), 'Falha ao carregar: ' + err.message); });
+'use strict';
+const $ = id => document.getElementById(id);
+const state = {documents:[], events:[], domain:'all', messages:[], busy:false, current:'overview', document:null};
+const titles = {overview:'Visão geral',chat:'Conversar com Hermes',library:'Materiais',activity:'Atividade',integrations:'Integrações',system:'Sistema e rotinas'};
+const icon = name => {const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('class','icon');svg.setAttribute('aria-hidden','true');const use=document.createElementNS('http://www.w3.org/2000/svg','use');use.setAttribute('href','#i-'+name);svg.append(use);return svg;};
+const el = (tag,cls,text) => {const node=document.createElement(tag);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node;};
+function navigate(view){if(!titles[view])view='overview';state.current=view;document.querySelectorAll('.view').forEach(node=>node.hidden=node.id!=='view-'+view);document.querySelectorAll('.nav-button').forEach(button=>{if(button.dataset.view===view)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});$('breadcrumb-title').textContent=titles[view];document.title=titles[view]+' — hermeserenao';if(location.hash!=='#'+view)history.replaceState(null,'','#'+view);closeMenu();window.scrollTo(0,0);}
+function closeMenu(){$('sidebar').classList.remove('open');$('mobile-overlay').classList.remove('open');$('menu-toggle').setAttribute('aria-expanded','false');}
+document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>navigate(button.dataset.view)));
+$('menu-toggle').addEventListener('click',()=>{const open=$('sidebar').classList.toggle('open');$('mobile-overlay').classList.toggle('open',open);$('menu-toggle').setAttribute('aria-expanded',String(open));});
+$('mobile-overlay').addEventListener('click',closeMenu);
+window.addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenu();if(event.key==='/'&&!/INPUT|TEXTAREA|SELECT/.test(event.target.tagName)){event.preventDefault();$('global-search').focus();}});
+async function getJSON(path){const response=await fetch(path,{cache:'no-store'});if(!response.ok)throw new Error('Recurso indisponível (HTTP '+response.status+')');return response.json();}
+function showError(message){$('load-error').hidden=false;$('load-error').textContent=message;}
+function chip(stateName){return el('span','chip '+(stateName==='ok'?'ok':stateName==='demo'?'demo':''),{ok:'Disponível',demo:'Demonstração',off:'Indisponível'}[stateName]||'Não verificado');}
+function renderStatus(data){const agent=data.components.find(component=>component.id==='agent');const up=agent?.state==='ok';$('mode').replaceChildren(el('span','dot'),document.createTextNode(up?'Hermes disponível':'Hermes indisponível'));$('mode').className='chip '+(up?'ok':'');$('agent-status').replaceChildren(el('span','dot'));$('agent-status').firstChild.style.color=up?'var(--green)':'var(--amber)';$('agent-status').append(document.createTextNode(up?'Hermes disponível':'Sem conexão'));$('chat-state').textContent=up?'API local disponível':'API indisponível';$('chat-state').className='chip '+(up?'ok':'');const box=$('components');box.replaceChildren();data.components.forEach(component=>{const li=el('li','component');const body=el('div');body.append(el('b','',component.label),el('p','',component.detail));li.append(body,chip(component.state));box.append(li);});$('footer-status').textContent='Última verificação · '+new Date(data.generated_at*1000).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
+function renderDocuments(){const docs=state.documents;$('nav-doc-count').textContent=docs.length;$('doc-status').textContent=docs.length+' documento'+(docs.length===1?'':'s');$('library-total').textContent=docs.length+' arquivo'+(docs.length===1?'':'s');$('recent-docs').replaceChildren();docs.filter(doc=>!doc.path.endsWith('index.md')&&!doc.path.endsWith('AGENTS.md')).slice(0,3).forEach(doc=>{const li=el('li');const button=el('button','doc-row');button.type='button';const mark=el('span','file-icon');mark.append(icon('file'));const copy=el('span','doc-copy');copy.append(el('span','doc-title',doc.title),el('span','doc-path',doc.path));button.append(mark,copy,el('span','arrow','›'));button.addEventListener('click',()=>openDocument(doc));li.append(button);$('recent-docs').append(li);});const box=$('context');box.replaceChildren();const visible=docs.filter(doc=>state.domain==='all'||doc.path.includes('/'+state.domain+'/'));visible.forEach(doc=>{const button=el('button','document-card');button.type='button';const mark=el('span','file-icon');mark.append(icon('file'));button.append(mark,el('h3','',doc.title),el('p','',doc.path),el('small','',doc.lines+' linhas · Markdown'));button.addEventListener('click',()=>openDocument(doc));box.append(button);});if(!visible.length)box.append(el('p','muted','Nenhum documento neste domínio.'));}
+function formatTime(value){const date=new Date(value);return Number.isNaN(date.getTime())?String(value||'Sem data'):date.toLocaleString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
+function eventTitle(kind){return {chat:'Conversa com Hermes',ask:'Busca na base',server_started:'Central iniciada',gateway:'Evento demonstrativo do gateway'}[kind]||kind||'Evento';}
+function renderEvents(){const recent=$('recent-events');recent.replaceChildren();state.events.slice(0,4).forEach(row=>{const li=el('li','event');const mark=el('span','event-icon');mark.append(icon(row.kind==='chat'?'chat':row.kind==='ask'?'search':'activity'));const copy=el('div','event-copy');copy.append(el('b','',eventTitle(row.kind)),el('p','',row.detail||'Sem detalhes'));const time=el('time','',formatTime(row.ts));time.dateTime=row.ts||'';li.append(mark,copy,time);recent.append(li);});if(!state.events.length)recent.append(el('li','empty-state','As próximas ações do portal aparecem aqui.'));const filtered=state.events.filter(row=>$('event-filter').value==='all'||row.kind===$('event-filter').value);const body=$('events');body.replaceChildren();filtered.forEach(row=>{const tr=el('tr');tr.append(el('td','',formatTime(row.ts)),el('td','',eventTitle(row.kind)),el('td','',row.detail||'—'));body.append(tr);});if(!filtered.length){const td=el('td','empty-state','Nenhum evento neste filtro.');td.colSpan=3;const tr=el('tr');tr.append(td);body.append(tr);}}
+function renderSkills(skills){$('skills').replaceChildren();skills.forEach(skill=>{const row=el('div','job');const body=el('div');body.append(el('b','',skill.name),el('p','',skill.description));row.append(body);$('skills').append(row);});if(!skills.length)$('skills').append(el('p','muted','Nenhuma skill registrada no projeto.'));}
+function renderJobs(jobs){$('jobs').replaceChildren();jobs.forEach(job=>{const row=el('div','job');const body=el('div');body.append(el('b','',job.description),el('p','',job.id));row.append(body,el('span','chip demo','Exemplo'));$('jobs').append(row);});}
+async function refreshEvents(){state.events=await getJSON('/api/events');renderEvents();}
+$('refresh-events').addEventListener('click',async()=>{try{await refreshEvents();}catch(error){showError('Não consegui atualizar a atividade. '+error.message);}});
+$('event-filter').addEventListener('change',renderEvents);
+$('refresh-status').addEventListener('click',async()=>{try{renderStatus(await getJSON('/api/status'));}catch(error){showError('Não consegui verificar o sistema. '+error.message);}});
+document.querySelectorAll('[data-domain]').forEach(button=>button.addEventListener('click',()=>{state.domain=button.dataset.domain;document.querySelectorAll('[data-domain]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));renderDocuments();}));
+async function searchContext(query){const out=$('answer');out.replaceChildren(el('p','muted','Buscando trechos nos arquivos locais…'));$('search-submit').disabled=true;try{const response=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:query})});const data=await response.json();if(!response.ok)throw new Error(data.error||'Falha na busca');out.replaceChildren();if(!data.answers?.length){out.append(el('div','inline-note','Nenhum trecho corresponde a essa busca. Tente outro assunto ou explore os arquivos abaixo.'));return;}data.answers.forEach(hit=>{const card=el('article','search-result');const button=el('button','',hit.source+':'+hit.line);button.addEventListener('click',()=>openDocument(state.documents.find(doc=>doc.path===hit.source)||{title:hit.source,path:hit.source}));card.append(button,el('p','',hit.text));out.append(card);});refreshEvents().catch(()=>{});}catch(error){out.replaceChildren(el('p','load-error',error.message));}finally{$('search-submit').disabled=false;}}
+$('ask-form').addEventListener('submit',event=>{event.preventDefault();const query=$('question').value.trim();if(query)searchContext(query);});
+$('reset-search').addEventListener('click',()=>{$('question').value='';$('answer').replaceChildren();});
+$('global-search-form').addEventListener('submit',event=>{event.preventDefault();const query=$('global-search').value.trim();navigate('library');$('question').value=query;if(query)searchContext(query);});
+async function openDocument(doc){state.document=doc;$('document-title').textContent=doc.title;$('document-path').textContent=doc.path;$('document-content').textContent='Carregando documento…';$('document-dialog').showModal();try{const data=await getJSON('/api/document?path='+encodeURIComponent(doc.path));if(state.document===doc)$('document-content').textContent=data.content;}catch(error){if(state.document===doc)$('document-content').textContent='Não consegui abrir este arquivo: '+error.message;}}
+$('close-document').addEventListener('click',()=>$('document-dialog').close());
+$('document-dialog').addEventListener('click',event=>{if(event.target===$('document-dialog')){const rect=event.target.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)event.target.close();}});
+function prepareChat(prompt=''){navigate('chat');$('chat-input').value=prompt;$('chat-input').focus();}
+$('ask-document').addEventListener('click',()=>{const doc=state.document;$('document-dialog').close();prepareChat('Quero entender o material '+doc.path+'. Explique seu conteúdo e cite as fontes disponíveis.');});
+document.querySelectorAll('[data-prompt]').forEach(button=>button.addEventListener('click',()=>prepareChat(button.dataset.prompt)));
+document.querySelectorAll('[data-action="open-chat"]').forEach(button=>button.addEventListener('click',()=>prepareChat()));
+function addMessage(role,content,cls=''){const box=el('article','message '+(cls||role));box.append(el('p','message-label',role==='user'?'Você':role==='assistant'?'Hermes':'Aviso'),el('div','message-content',content));$('chat-log').append(box);$('chat-log').scrollTop=$('chat-log').scrollHeight;return box;}
+async function sendChat(question){if(state.busy||!question.trim())return;if(state.messages.length>=28){addMessage('error','Esta conversa atingiu o limite de turnos do MVP. Limpe a conversa para continuar.','error');return;}state.busy=true;$('chat-send').disabled=true;$('clear-chat').disabled=true;$('chat-input').value='';$('chat-welcome').hidden=true;state.messages.push({role:'user',content:question});addMessage('user',question);const pending=addMessage('assistant','Trabalhando na sua solicitação…');$('chat-state').textContent='Em execução';try{const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:state.messages})});const data=await response.json();if(!response.ok)throw new Error(data.error||'O Hermes não concluiu a resposta.');if(typeof data.answer!=='string')throw new Error('O Hermes não retornou uma resposta válida.');pending.remove();state.messages.push({role:'assistant',content:data.answer});const message=addMessage('assistant',data.answer);$('chat-sources').replaceChildren();if(data.sources?.length){const sources=[...new Set(data.sources.map(source=>source.source+':'+source.line))];const details=el('details');details.append(el('summary','',sources.length+' trechos enviados como contexto'),el('p','',sources.join('\n')));message.append(details);sources.forEach(source=>$('chat-sources').append(el('p','context-path mono',source)));}else $('chat-sources').append(el('p','context-path','Nenhum trecho recuperado neste turno.'));$('chat-state').textContent='Pronto';refreshEvents().catch(()=>{});}catch(error){pending.remove();state.messages.pop();addMessage('error',error.message,'error');$('chat-input').value=question;$('chat-state').textContent='Erro na solicitação';}finally{state.busy=false;$('chat-send').disabled=false;$('clear-chat').disabled=false;if(state.current==='chat')$('chat-input').focus();}}
+$('chat-form').addEventListener('submit',event=>{event.preventDefault();sendChat($('chat-input').value.trim());});
+$('quick-form').addEventListener('submit',event=>{event.preventDefault();const question=$('quick-input').value.trim();if(!question)return;navigate('chat');$('quick-input').value='';sendChat(question);});
+$('chat-input').addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();$('chat-form').requestSubmit();}});
+$('clear-chat').addEventListener('click',()=>{if(state.busy)return;if(state.messages.length&&!window.confirm('Limpar o histórico desta aba? Isso não interrompe nem apaga sessões do Hermes.'))return;state.messages=[];document.querySelectorAll('#chat-log .message').forEach(message=>message.remove());$('chat-welcome').hidden=false;$('chat-sources').replaceChildren();$('chat-input').value='';});
+async function load(){const tasks=[['status','/api/status'],['documents','/api/context'],['skills','/api/skills'],['events','/api/events'],['jobs','/api/jobs']];const results=await Promise.allSettled(tasks.map(async([key,path])=>[key,await getJSON(path)]));const failures=[];results.forEach((result,index)=>{if(result.status==='rejected'){failures.push(tasks[index][0]);return;}const [key,data]=result.value;if(key==='status')renderStatus(data);if(key==='documents'){state.documents=data;renderDocuments();}if(key==='events'){state.events=data;renderEvents();}if(key==='skills')renderSkills(data);if(key==='jobs')renderJobs(data);});if(failures.length)showError('Parte da central não carregou ('+failures.join(', ')+'). O restante continua disponível.');}
+navigate(location.hash.slice(1)||'overview');load();
 </script>
 </body>
 </html>

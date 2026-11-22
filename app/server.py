@@ -7,7 +7,7 @@ import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 from .architecture import svg as architecture_svg
 from .providers import get_provider
@@ -71,6 +71,14 @@ def list_context():
         title = next((l.lstrip("# ").strip() for l in lines if l.startswith("#")), p.stem)
         out.append({"path": _rel(p), "title": title, "lines": len(lines)})
     return out
+
+
+def context_document(relative_path):
+    """Read only registered Markdown sources, never arbitrary filesystem paths."""
+    for path in _md_files():
+        if _rel(path) == relative_path and path.resolve().is_relative_to(CONTEXT.resolve()):
+            return {"path": relative_path, "content": path.read_text(encoding="utf-8")}
+    raise ValueError("Documento não encontrado na base de contexto")
 
 
 def list_skills():
@@ -177,6 +185,12 @@ class Handler(BaseHTTPRequestHandler):
             "/api/jobs": lambda: self._json(list_jobs()),
             "/api/architecture.svg": lambda: self._send(200, architecture_svg(), "image/svg+xml; charset=utf-8"),
         }
+        if path == "/api/document":
+            relative = parse_qs(urlparse(self.path).query).get("path", [""])[0]
+            try:
+                return self._json(context_document(relative))
+            except ValueError as exc:
+                return self._json({"error": str(exc)}, 404)
         if path in routes:
             return routes[path]()
         if path in ("/", "/index.html"):

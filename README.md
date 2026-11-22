@@ -10,7 +10,10 @@ A interface conversa com o Hermes instalado nesta máquina, que usa o provider O
 - Busca determinística na base local, com arquivo e linha como citação.
 - O chat se conecta ao API Server local do Hermes por rede loopback; o endpoint de busca permanece disponível para consulta rápida.
 - Integrações e gateway multicanal são demonstrativos, sem acesso externo.
+- Portal responsivo com visão geral, chat, materiais, atividade, integrações e sistema/rotinas.
+- Leitura dos materiais Markdown no próprio portal, com filtros e busca por trechos.
 - Escopo do MVP local: [docs/MVP_SCOPE.md](docs/MVP_SCOPE.md).
+- Organização e decisões visuais: [docs/INTERFACE.md](docs/INTERFACE.md).
 
 
 ## Rodando com Docker
@@ -58,6 +61,7 @@ Verificação de segredos:
 - `GET /` — painel
 - `GET /api/status` — estado dos componentes, lido do filesystem
 - `GET /api/context` — documentos indexados
+- `GET /api/document?path=context/agentes/memoria.md` — leitura de um arquivo Markdown registrado na base; caminhos externos são rejeitados
 - `GET /api/skills` — skills registradas
 - `GET /api/events` — últimos eventos
 - `GET /api/architecture.svg` — diagrama gerado
