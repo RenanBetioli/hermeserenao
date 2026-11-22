@@ -1,0 +1,14 @@
+[
+  {
+    "name": "context-first",
+    "description": "Antes de responder, consulte o índice da base de contexto e cite o arquivo de origem.",
+    "file": "skills/context-first.md",
+    "status": "active"
+  },
+  {
+    "name": "segredos-nunca",
+    "description": "Nunca registre credenciais em memória, eventos ou arquivos versionados.",
+    "file": "skills/segredos-nunca.md",
+    "status": "active"
+  }
+]

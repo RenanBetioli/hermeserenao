@@ -1,0 +1,7 @@
+{"ts":"2026-11-22T09:12:00","kind":"server_started","detail":"127.0.0.1:8765"}
+{"ts":"2026-11-22T09:13:24","kind":"ask","detail":"onde ficam as regras de segredo"}
+{"ts":"2026-11-22T09:14:02","kind":"gateway","detail":"mensagem simulada recebida pelo canal local"}
+{"ts": "2026-11-22T19:59:37", "kind": "server_started", "detail": "0.0.0.0:8765"}
+{"ts": "2026-11-22T19:59:44", "kind": "ask", "detail": "como tratar segredos"}
+{"ts": "2026-11-22T20:01:32", "kind": "server_started", "detail": "container:8765"}
+{"ts": "2026-11-22T20:01:47", "kind": "ask", "detail": "como tratar segredos"}

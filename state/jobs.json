@@ -1,0 +1,4 @@
+[
+  {"id": "briefing", "description": "resumo diário (exemplo)", "enabled": false},
+  {"id": "healthcheck", "description": "checagem de componentes", "enabled": true}
+]
