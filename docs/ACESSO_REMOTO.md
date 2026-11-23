@@ -47,6 +47,12 @@ A máquina usa Linux Mint baseado em Ubuntu. Instalar Tailscale é uma alteraç�
 - Acesso de dispositivo fora da tailnet é recusado; ninguém recebeu URL pública.
 - Nenhum segredo, identificador de tailnet ou dado privado foi enviado ao GitHub.
 
+## Estado desta instalação (22/11/2026)
+
+- Tailscale Serve ativado pelo operador; HTTPS privado encaminha somente a Central na porta local `8765`. Funnel não foi ativado.
+- Verificações pela URL HTTPS privada **na própria máquina**: painel, `/api/status` e `/api/chat` responderam HTTP 200; Hermes permaneceu em loopback.
+- **Pendente:** abrir a Central no celular pela rede móvel com Tailscale conectado e confirmar que um dispositivo sem Tailscale não consegue acessá-la. Não registrar aqui a URL ou IP da tailnet.
+
 ## Se a ideia mudar para acesso público
 
 Este guia não serve para visitantes públicos. Antes disso será necessário separar o agente pessoal, autenticar cada usuário, restringir ferramentas, isolar dados, limitar uso e revisar o provedor/modelo e custos. Nunca trocar o bind para `0.0.0.0` nem ativar Funnel no app atual.
