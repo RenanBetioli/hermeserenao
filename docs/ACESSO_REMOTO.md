@@ -51,7 +51,8 @@ A máquina usa Linux Mint baseado em Ubuntu. Instalar Tailscale é uma alteraç�
 
 - Tailscale Serve ativado pelo operador; HTTPS privado encaminha somente a Central na porta local `8765`. Funnel não foi ativado.
 - Verificações pela URL HTTPS privada **na própria máquina**: painel, `/api/status` e `/api/chat` responderam HTTP 200; Hermes permaneceu em loopback.
-- **Pendente:** abrir a Central no celular pela rede móvel com Tailscale conectado e confirmar que um dispositivo sem Tailscale não consegue acessá-la. Não registrar aqui a URL ou IP da tailnet.
+- **Verificado no celular:** painel abriu por dados móveis (4G), com Tailscale conectado; a Mint1 também mostrou o celular como único peer online da mesma conta.
+- **Pendente:** testar uma mensagem no chat pelo celular e confirmar que a URL não abre com o Tailscale desligado no celular. Não registrar aqui a URL ou IP da tailnet.
 
 ## Se a ideia mudar para acesso público
 
