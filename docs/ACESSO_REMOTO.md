@@ -34,7 +34,7 @@ A máquina usa Linux Mint baseado em Ubuntu. Instalar Tailscale é uma alteraç�
    tailscale serve status
    ```
 
-   Se a CLI exigir privilégio para configurar Serve, **não** delegar uma senha ao agente; o operador decide se autoriza o comando ou configura o operador do Tailscale. Registrar só o procedimento genérico neste repositório, nunca a URL resultante.
+   Na primeira ativação, o Tailscale pode informar que **Serve não está habilitado na tailnet** e mostrar uma página de autorização. O operador deve abrir essa página no próprio navegador, entrar e aprovar Serve/HTTPS; em seguida, repetir o comando e conferir o status. Não copiar a URL de autorização, identificadores ou tokens para o repositório. Se a CLI exigir privilégio para configurar Serve, **não** delegar uma senha ao agente; o operador decide se autoriza o comando ou configura o operador do Tailscale.
 
 5. Instalar o app Tailscale no celular, entrar na mesma tailnet e abrir a URL HTTPS privada exibida por `tailscale serve status`, usando dados móveis (Wi-Fi desligado) para testar acesso remoto real. Testar painel e chat. Confirmar que a URL não abre em dispositivo/navegador fora da tailnet.
 
